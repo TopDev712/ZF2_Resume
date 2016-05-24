@@ -1,0 +1,74 @@
+<div class="login clearfix" ng-app="validationApp" ng-controller="mainController">
+    <div class="col-sm-5 bordered">
+      <h2>Sign in</h2>
+      <div class="m40">
+        <form id="login" name="userForm" ng-submit="submitForm()" novalidate>          
+            <div class="form-group" ng-class="{ 'has-error' : userForm.email.$invalid && !userForm.email.$pristine }">
+              <input type="email" class="input-sm form-control" placeholder="Your email address" name="email" ng-model="user.email" required/>
+              <p ng-show="userForm.email.$invalid && !userForm.email.$pristine" class="help-block">Enter a valid email.</p>
+            </div>
+            <div class="form-group" ng-class="{ 'has-error' : userForm.name.$invalid && !userForm.name.$pristine }">
+              <input type="password" name="password" class="input-sm form-control" placeholder="Your password" ng-model="user.name" required/>
+              <p ng-show="userForm.password.$invalid && !userForm.password.$pristine" class="help-block">Password is required.</p>
+            </div>
+
+          <div class="form-group">
+              <input type="submit" value="Sign In" class="btn btn-primary btn-block" ng-disabled="userForm.$invalid"/>
+          </div>
+          <a href="#">Forgot Passord?</a>
+        </form>
+      </div>
+    </div>
+    <div class="col-sm-2">
+    	<span class="or">OR</span>
+    </div>
+    <div class="col-sm-5 bordered">
+    	<h2>Social Accounts</h2>
+        <div class="m40">
+        	<a href="#" class="reg gp"><img src="<?php echo $this->basePath(); ?>/images/Gplus.jpg" alt="GP" />Sign in with Google</a>
+            <a href="#" class="reg fb"><img src="<?php echo $this->basePath(); ?>/images/facebook.jpg" alt="GP" />Sign in with Facebook</a>
+            <a href="#" class="reg in"><img src="<?php echo $this->basePath(); ?>/images/linked-in.jpg" alt="GP" />Sign in with Linked In</a>
+        </div>
+    </div>
+    </div>
+    <div class="row">
+    	<div class="col-sm-12">
+        	<h2 class="text-center">Join the millions of job seekers finding jobs on Resume 2 Work! </h2>
+            <ul class="features clearfix">
+            	<li>Get daily job alerts via email</li>
+                <li>Mobile optimized job search tools</li>
+                <li>InstaMatch to jobs hiring now</li>
+                <li>No spam or banners, just jobs</li>
+                <li>One-click apply to jobs</li>
+                <li>Best of all, it's FREE!</li>
+            </ul>
+            <div class="m20 text-center">
+            	<img src="<?php echo $this->basePath(); ?>/images/truste.jpg" alt="truste" />
+            </div>
+        </div>
+    </div>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+    <script>
+ // create angular app
+	var validationApp = angular.module('validationApp', []);
+
+	// create angular controller
+	validationApp.controller('mainController', function($scope,$http) {
+
+		// function to submit the form after all validation has occurred			
+		$scope.submitForm = function() {
+
+			// check to make sure the form is completely valid
+			if ($scope.userForm.$valid) {
+				 formData = $scope.userForm;
+			        console.log(formData);
+			        window.location.href='/admin/dashboard';
+			        //$http.post('form.php', formData).success(function(){/*success callback*/});
+				//alert('our form is amazing');
+			}
+
+		};
+
+	});
+
+    </script>

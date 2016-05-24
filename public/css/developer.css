@@ -1,0 +1,13 @@
+.listing-boxed{float:none!important;}
+.dropdown-menu {width: 100%;}
+#header .dropdown-menu {
+    left: 0!important;
+    text-align: center;
+}
+.nav.navbar-nav.pull-right > li > a {
+    margin-right: 0!important;
+}
+@media (max-width: 600px) {
+  .register-link > a {padding-right: 0px!important;padding-left: 0px!important;}
+  .user-menu{display: none!important;}
+}

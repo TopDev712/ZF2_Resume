@@ -1,0 +1,76 @@
+<script data-require="ui-bootstrap@*" data-semver="0.12.1" src="https://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.12.1.min.js"></script>
+<div ng-app="Resume2WorkApp" ng-controller="DashboardController" >
+<div class="grayBg">
+    <div class="container">
+    <div class="row">
+      <div class="col-sm-12">
+        <form class="form-horizontal search" id="findJob" action="/search" method="GET">
+          <div class="form-group">
+            <div class="col-sm-3">
+              <input type="text" name="term" class="form-control input-sm" placeholder="Job Title/Keyword" value="<?php echo $this->search['term'];?>" ng-model="search.term"/>
+            </div>
+            <div class="col-sm-3">
+              <input type="text" name="location"  class="form-control  input-sm" placeholder="Location(City, State, Zip)" value="<?php echo $this->search['location'];?>" ng-model="search.location"/>
+            </div>
+            <div class="col-sm-3">
+            <button type="submit" class="btn btn-primary btn-sm">Search Jobs</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+    </div>
+    </div>
+     <div class="container">
+    <div class="content">
+    	<div class="row">
+        	<div class="col-sm-12">
+        	<?php if($jobs){?>
+            	<h2>Your Recommended Jobs</h2>
+            <?php }else{?>
+            	<h2><?php echo $message;?></h2>
+            <?php }?>
+            </div>
+        </div>
+      
+      <?php if($jobs){ ?>
+      <div class="row joblist">
+       <?php $index=1;foreach ($jobs->jobs as $job){ ?>
+        <div class="col-sm-6">
+          <div class="boxed">
+          		<div class="head">
+                	<span><?php echo substr($job->name, 0,2);?></span>
+                    <a href="<?php echo $job->url;?>" ng-click="onJobClick('<?php echo htmlspecialchars(json_encode($job))?>');" target="_new"><h3><?php echo $job->name;?></h3></a>
+                    <p><?php echo $job->hiring_company->name;?>|<?php echo $job->city;?>,<?php echo $job->state;?>,<?php echo $job->country;?></p>
+                </div>
+                <p><?php echo $job->snippet;?></p>
+                <?php if($job->posted_time_friendly=='today'){?>
+                <span class="newJob">new</span>
+                <?php }?>
+                <div class="close"></div>
+          </div>
+        </div>
+        <?php if(($index%2)==0){?>
+        </div>
+        <div class="row joblist">
+        <?php }$index++;?>
+        <?php }?>
+        </div>
+        <?php }?>      
+    </div>
+	</div>
+	
+	
+	<script>
+     var resume2work = angular.module('Resume2WorkApp', ['ui.bootstrap']);
+		resume2work.controller('DashboardController', function ($scope, $http,$sce) {
+			$scope.userJobClickUrl = '/api/jobclick';
+			$scope.onJobClick = function (job) {
+            //alert(job);
+    		var postData ={"job": angular.fromJson(job),};
+        		$http.post($scope.userJobClickUrl,postData);             
+              }
+          
+    });
+</script>
+</div>

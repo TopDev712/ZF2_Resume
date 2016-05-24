@@ -1,0 +1,198 @@
+<script data-require="ui-bootstrap@*" data-semver="0.12.1"
+        src="https://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.12.1.min.js"></script>
+
+<?php $this->headMeta()->setName('robots', 'noindex, nofollow') ?>
+
+
+<div ng-app="Resume2WorkApp" ng-controller="SearchController" data-ng-init="loadJobs()">
+  <div class="grayBg">
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-12">
+          <form action="/search" method="GET" class="form-horizontal search" id="findJobAfterSearch"
+                ng-submit="onSearch(search)" ng-model="search">
+            <div class="form-group">
+              <div class="col-sm-3">
+                <input name="term" type="text" class="form-control input-sm" placeholder="Job Title/Keyword"
+                       value="<?php echo $this->search['term']; ?>" ng-model="search.term"/>
+              </div>
+              <div class="col-sm-3">
+                <input name="location" type="text" class="form-control input-sm"
+                       placeholder="Location(City, State, Zip)" value="<?php echo $this->search['location']; ?>"
+                       ng-model="search.location"/>
+              </div>
+              <div class="col-sm-2">
+                <select class="form-control input-sm" name="radius">
+                  <option value="" <?php echo ($this->search['radius'] == '') ? 'selected' : ''; ?>>--- Select Radius ---</option>
+                  <?php foreach ([1, 2, 5, 10, 15, 20, 25, 30, 50, 100,] as $item) { ?>
+                  <option value="<?php echo $item ?>" <?php echo ($this->search['radius'] == $item) ? 'selected' : ''; ?>>
+                    <?php echo $item . 'miles'; ?>
+                  </option>
+                  <?php } ?>
+                </select>
+              </div>
+              <div class="col-sm-3">
+                <button type="submit" class="btn btn-primary btn-sm">Search Jobs</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="row" style="display: none;">
+        <div class="col-sm-12 grayBg">
+          <form class="form-horizontal search">
+            <div class="form-group">
+              <div class="col-sm-3">
+                <select class="form-control  input-sm">
+                  <option>Posted Anywhere</option>
+                </select>
+              </div>
+              <div class="col-sm-3">
+                <select class="form-control  input-sm">
+                  <option>Posted Anytime</option>
+                </select>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div ng-if="searchInProgress==true" class="loader">Loading.....</div>
+  <div class="container">
+    <div class="content">
+      <div class="row">
+        <div class="col-lg-12 col-md-9 hide" id="searchPageContent">
+          <!-- Story #115 Modify display format when showing total jobs. Added | number -->
+          <h4 align="right" ng-if="total_jobs>0"><strong>Jobs <span ng-if="currentPage==0">{{currentPage+1}}</span>
+              <span ng-if="currentPage>0">{{((currentPage-1)*numPerPage)+1}}</span> to {{currentPage*numPerPage}} of
+              {{total_jobs | number }} {{search_term}} jobs in <span style="text-transform:capitalize;">{{search_location}}</span></strong>
+          </h4>
+          <h4 ng-if="jobs.length<=0"><strong>No Jobs found</strong></h4>
+
+          <div class="boxed" ng-show="jobs.length>0">
+            <ul class="jobs">
+              <li ng-repeat="job in filteredJobs">
+                <div class="item">
+                  <a ng-href="{{job.url}}" ng-click="onJobClick(job)" target="_new" class="h4">{{ job.name }} at {{
+                    job.hiring_company.name }} <span class="badge"
+                                                     ng-show="job.posted_time_friendly=='today'">New</span></a>
+
+                  <p>{{ job.location }}</p>
+                  <small>Posted on {{ job.source }}</small>
+                  <p ng-bind-html="job.snippet | renderHTMLCorrectly"></p>
+                </div>
+              </li>
+            </ul>
+            <nav class="text-center">
+              <pagination
+                ng-model="currentPage"
+                total-items="total_jobs"
+                max-size="maxSize"
+                ng-change="pageChanged()"
+                items-per-page="20"
+                boundary-links="true">
+              </pagination>
+            </nav>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <script>
+
+    var resume2work = angular.module('Resume2WorkApp', ['ui.bootstrap']);
+
+    resume2work.controller('SearchController', function ($scope, $http, $sce) {
+      $scope.currentPage = 1;
+      $scope.numPerPage = 20;
+      $scope.maxSize = 5;
+      $scope.search_term = '<?php echo $this->search['term'];?>';
+      $scope.search_location = '<?php echo $this->search['location'];?>';
+      $scope.searchUrl = '/api/search';
+      $scope.userJobClickUrl = '/api/jobclick';
+      $scope.search_radius = '<?php echo $this->search['radius'];?>';
+      $scope.search_landingPage = '<?php echo $this->search['landing_page'];?>';
+      $('#searchPageContent').removeClass('hide');
+      $scope.loadJobs = function () {
+        getJobs();
+      }
+
+      $scope.pageChanged = function () {
+        getPaginatedJobs();
+      };
+
+      function getJobs() {
+        $scope.searchInProgress = true;
+        $scope.searchInitiated = true;
+        var postData = {
+          "term": $scope.search_term,
+          "location": $scope.search_location,
+          "page": $scope.currentPage,
+          "radius": $scope.search_radius,
+          "landing_page": $scope.search_landingPage
+        };
+        $http.post($scope.searchUrl, postData)
+          .success(function (response) {
+            if (response.statusCode == 1) {
+
+              $scope.jobs = response.result.jobs;
+              $scope.total_jobs = response.result.total_jobs;
+              $scope.$watch('currentPage + numPerPage', function () {
+                var begin = (($scope.currentPage - 1) * $scope.numPerPage);
+                var end = begin + $scope.numPerPage;
+                $scope.filteredJobs = $scope.jobs.slice(begin, end);
+                $scope.search_term = response.term;
+                $scope.search_location = response.location;
+                $scope.search = {term: $scope.search_term, location: $scope.search_location};
+              });
+
+            } else {
+              $scope.jobs = null;
+            }
+            $scope.searchInProgress = false;
+          });
+
+      }
+
+      function getPaginatedJobs() {
+
+        $scope.searchInProgress = true;
+        $scope.searchInitiated = true;
+        var postData = {
+          "term": $scope.search_term,
+          "location": $scope.search_location,
+          "page": $scope.currentPage,
+          "radius": $scope.search_radius,
+          "landing_page": $scope.search_landingPage
+        };
+        $http.post($scope.searchUrl, postData)
+          .success(function (response) {
+            if (response.statusCode == 1) {
+
+              $scope.jobs = response.result.jobs;
+              $scope.total_jobs = response.result.total_jobs;
+              angular.copy(response.result.jobs, $scope.filteredJobs)
+
+            } else {
+              $scope.jobs = null;
+            }
+            $scope.searchInProgress = false;
+          });
+
+      }
+
+      $scope.onJobClick = function (job) {
+        var postData = {"job": job,};
+        $http.post($scope.userJobClickUrl, postData);
+      }
+
+    }).filter('renderHTMLCorrectly', function ($sce) {
+      return function (stringToParse) {
+        return $sce.trustAsHtml(stringToParse);
+      }
+    });
+  </script>
+
+</div>

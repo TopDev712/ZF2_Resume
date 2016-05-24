@@ -1,0 +1,16 @@
+  <footer id="footer">
+    <ul class="pull-left">
+      
+	  <li><a href="<?php echo $this->basePath() . '/terms'; ?>">Terms of use</a></li>
+      <li><a href="<?php echo $this->basePath() . '/privacy'; ?>">Privacy Policy</a></li>
+      <li><a href="<?php echo $this->basePath() . '/faq'; ?>">FAQ</a></li>
+	  
+    </ul>
+    <p class="pull-right">&copy; <?php echo date('Y') ?> Resumes 2 Work. All Rights Reserved.</p>
+	<script>
+	mixpanel.track('Page Viewed', {
+			'page name' : document.title,
+			'url' : window.location.pathname
+			});
+	</script>
+  </footer>

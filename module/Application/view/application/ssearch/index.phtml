@@ -1,0 +1,110 @@
+<script data-require="ui-bootstrap@*" data-semver="0.12.1" src="https://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.12.1.min.js"></script>
+<meta name="fragment" content="!">
+<?php 
+	$this->headMeta()->setName('DESCRIPTION',$metaDescription)
+	->setName('KEYWORDS',$metaKeyword)
+?>
+<?php $this->headTitle($this->pageTitle) ?>
+
+<div ng-app="Resume2WorkApp" ng-controller="SearchController" >
+ <div class="grayBg">
+    <div class="container">
+    <div class="row">
+      <div class="col-sm-12">
+        <form action="/search" method="GET" class="form-horizontal search" id="findJobAfterSearch" ng-submit="onSearch(search)" ng-model="search">
+          <div class="form-group">
+            <div class="col-sm-3">
+              <input name="term" type="text" class="form-control input-sm" placeholder="Job Title/Keyword" value="<?php echo $this->term ?>" ng-model="search.term"/>
+            </div>
+            <div class="col-sm-3">
+             <input name="location" type="text" class="form-control  input-sm" placeholder="Location(City, State, Zip)" value="<?php echo $this->location ?>" ng-model="search.location"/>
+            </div>
+            <div class="col-sm-3">
+            <button type="submit" class="btn btn-primary btn-sm">Search Jobs</button>
+            </div>
+          </div>
+        </form>
+        </div>
+      </div>
+      <div class="row" style="display: none;">
+      <div class="col-sm-12 grayBg">
+        <form class="form-horizontal search">
+          <div class="form-group">
+            <div class="col-sm-3">
+              <select class="form-control  input-sm">
+              	<option>Posted Anywhere</option>
+              </select>
+            </div>
+            <div class="col-sm-3">
+              <select class="form-control  input-sm">
+              	<option>Posted Anytime</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+    </div>
+    </div>
+ <div ng-if="searchInProgress==true" class="loader">Loading.....</div> 
+  <div class="container" >
+    <div class="content">
+  	  <div class="row">
+      <div class="col-lg-12 col-md-9 hide" id="searchPageContent">
+        <!-- Story #115 Modify display format when showing total jobs. Added | number --> 
+		<?php $totalJobs =  number_format($result->total_jobs) ?>
+		<?php if($result->total_jobs>0) echo "<h4 align='right'><strong>Jobs $this->startPosition to $this->endPosition of $totalJobs $this->term jobs in <span style='text-transform:capitalize;'>$this->location</span></strong></h4>"  ?>    
+		<?php if($result->total_jobs<=0) echo "<h4 align='right'><strong>No Jobs found</strong></h4>"   ?> 
+        <div class="boxed">
+          <ul class="jobs">
+          <?php foreach($result->jobs  as $rjob) : ?>
+           <li>
+           <div class="item">
+                <a href="<?php echo $rjob->url?>" ng-click="onJobClick('<?php echo htmlspecialchars(json_encode($rjob))?>');" target="_new" class="h4"><?php echo $rjob->name?> at <?php echo $rjob->hiring_company->name?> <?php if($rjob->posted_time_friendly=='today') echo "<span class='badge' >New</span>" ?></a>
+                <p class="ng-binding"><?php echo $rjob->location?></p>
+                <small class="ng-binding ">Posted on <?php echo $rjob->source ?></small>
+                <p> <?php echo $rjob->snippet ?></p>                
+            </div>
+           </li> 
+		  <?php endforeach; ?>
+            </ul>
+          <nav class="text-center">
+          <?= ( count($paginator) > 0 ) ? $this->paginationControl($paginator, 'Sliding', 'application/ssearch/pagingControl.phtml', array('lang'=>'en', 'term'=>$this->term, 'location'=>$this->location)) : ""; ?>
+          </nav>
+        </div>        
+      </div>      
+    </div>
+    </div>
+  </div>  
+ <script>
+	angular.module('HTML5ModeURLs', []).config(['$routeProvider', function($route){
+		$route.html5Mode(true);
+	}]);
+                                                    
+     var resume2work = angular.module('Resume2WorkApp', ['ui.bootstrap']);
+		resume2work.controller('SearchController', function ($scope, $http,$sce) {
+		$scope.currentPage = 1;
+		$scope.numPerPage = 20;
+		$scope.maxSize = 5;
+		$scope.userJobClickUrl = '/api/jobclick';
+       	$scope.search_term = '<?php echo $term ?>';		
+       	$scope.search_location = '<?php echo $location ?>';  
+       	$scope.search_radius = '<?php echo $this->search['radius'];?>';
+       	$scope.search_landingPage= '<?php echo $this->search['landing_page'];?>';
+       	$scope.search = {term: '<?php echo $term ?>',location: '<?php echo $location ?>'};
+       	$('#searchPageContent').removeClass('hide');
+    		  
+    	 $scope.onJobClick = function (job) {
+			var postData ={"job": angular.fromJson(job),};
+    		$http.post($scope.userJobClickUrl,postData);             
+          }
+          
+    }).filter('renderHTMLCorrectly', function($sce)
+    		{
+    	return function(stringToParse)
+    	{
+    		return $sce.trustAsHtml(stringToParse);
+    	}
+    });
+</script>
+</div>

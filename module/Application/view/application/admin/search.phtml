@@ -1,0 +1,165 @@
+<script data-require="ui-bootstrap@*" data-semver="0.12.1" src="http://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.12.1.min.js"></script>
+
+<div ng-app="Resume2WorkApp" ng-controller="SearchController" data-ng-init="loadJobs()">
+
+ <div class="grayBg">
+    <div class="container">
+    <div class="row">
+      <div class="col-sm-12">
+        <form class="form-horizontal search" id="findJobAfterSearch" ng-submit="onSearch(search)" ng-model="search">
+          <div class="form-group">
+            <div class="col-sm-3">
+              <input type="text" class="form-control input-sm" placeholder="Job Title/Keyword" value="<?php echo $this->search['term'];?>" ng-model="search.term"/>
+            </div>
+            <div class="col-sm-3">
+              <input type="text" class="form-control  input-sm" placeholder="Location(City, State, Zip)" value="<?php echo $this->search['location'];?>" ng-model="search.location"/>
+            </div>
+            <div class="col-sm-3">
+            <button type="submit" class="btn btn-primary btn-sm">Search Jobs</button>
+            </div>
+          </div>
+        </form>
+        </div>
+      </div>
+      <div class="row" style="display: none;">
+      <div class="col-sm-12 grayBg">
+        <form class="form-horizontal search">
+          <div class="form-group">
+            <div class="col-sm-3">
+              <select class="form-control  input-sm">
+              	<option>Posted Anywhere</option>
+              </select>
+            </div>
+            <div class="col-sm-3">
+              <select class="form-control  input-sm">
+              	<option>Posted Anytime</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+    </div>
+    </div>
+ <div ng-if="searchInProgress==true" class="loader">Loading.....</div> 
+  <div class="container" >
+    <div class="content">
+  	  <div class="row">
+      <div class="col-lg-12 col-md-9" >
+        <h4 ng-if="jobs.length>0"><strong>{{jobs.length}} {{search_term}} jobs {{search_location}}</strong></h4>
+        <h4 ng-if="jobs.length<=0"><strong>No Jobs found</strong></h4>      
+        <div class="boxed" ng-show="jobs.length>0">
+          <ul class="jobs">
+            <li ng-repeat="job in filteredJobs">
+              <div class="item">
+                <a href="#" class="h4">{{ job.name }} at {{ job.hiring_company.name }} <span class="badge" ng-show="job.posted_time_friendly=='today'">New</span></a>
+                <p>{{ job.location }}</p>
+                <small>Posted on {{ job.source }}</small>
+                <p ng-bind-html="job.snippet | renderHTMLCorrectly"></p>
+              </div>
+            </li>            
+          </ul>
+          <nav class="text-center">
+		  <pagination 
+		      ng-model="currentPage"
+		      total-items="jobs.length"
+		      max-size="maxSize"  
+		      boundary-links="true">
+		    </pagination>
+		</nav>
+        </div>        
+      </div>      
+      
+    </div>
+    </div>
+  </div>  
+    <script>
+    
+    var resume2work = angular.module('Resume2WorkApp', ['ui.bootstrap']);
+
+	resume2work.controller('SearchController', function ($scope, $http,$sce) {
+		$scope.filteredTodos = [];
+		$scope.currentPage = 1;
+		$scope.numPerPage = 10;
+		$scope.maxSize = 5;
+    	  
+       $scope.onSearch = function (search) {
+           
+            $scope.searchInProgress = true;
+            $scope.searchInitiated = true;
+
+            $scope.searchUrl = '/api/search';
+            if (search)
+            {
+            	$scope.search_term = search.term;
+            	$scope.search_location = search.location;
+            	
+            }else{
+            	$scope.search_term = search.term;
+            	$scope.search_location = search.location;
+            }        
+            var postData ={
+                    "term": $scope.search_term,
+                    "location": 	$scope.search_location
+                  };    
+
+			$http.post($scope.searchUrl,postData)
+                .success(function (response) {
+                    if (response.statusCode == 1) {                     
+                        
+                        $scope.jobs = response.result;
+
+                        $scope.$watch('currentPage + numPerPage', function() {
+							var begin = (($scope.currentPage - 1) * $scope.numPerPage);
+                     	    var end = begin + $scope.numPerPage;
+							$scope.filteredJobs = $scope.jobs.slice(begin, end);
+                    	  });
+                       
+                    }else{
+						$scope.jobs = null;
+                    }
+                    $scope.searchInProgress = false;
+                });
+        }
+
+       $scope.loadJobs = function () {
+           
+           $scope.searchInProgress = true;
+           $scope.searchInitiated = true;
+       	$scope.search_term = '<?php echo $this->search['term'];?>';
+       	$scope.search_location = '<?php echo $this->search['location'];?>';
+           var postData ={
+                   "term": $scope.search_term,
+                   "location": 	$scope.search_location
+                 };
+           
+           	$scope.searchUrl = '/api/search';           	          
+
+			$http.post($scope.searchUrl,postData)
+               .success(function (response) {
+                   if (response.statusCode == 1) {                     
+                       
+                       $scope.jobs = response.result;
+
+                       $scope.$watch('currentPage + numPerPage', function() {
+							var begin = (($scope.currentPage - 1) * $scope.numPerPage);
+                    	    var end = begin + $scope.numPerPage;
+							$scope.filteredJobs = $scope.jobs.slice(begin, end);
+                   	  });
+                      
+                   }else{
+						$scope.jobs = null;
+                   }
+                   $scope.searchInProgress = false;
+               });
+       }
+    }).filter('renderHTMLCorrectly', function($sce)
+    		{
+    	return function(stringToParse)
+    	{
+    		return $sce.trustAsHtml(stringToParse);
+    	}
+    });
+</script>
+    
+</div>

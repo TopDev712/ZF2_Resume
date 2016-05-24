@@ -1,0 +1,32 @@
+<script data-require="ui-bootstrap@*" data-semver="0.12.1" src="https://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.12.1.min.js"></script>
+<?php
+$parameterGet = $this->ViewHelper;
+if ($parameterGet != ""){
+  $parameterGet = "?".$parameterGet;
+}
+?>
+<?php if ($this->pageCount): ?>
+<ul class="pagination ng-isolate-scope ng-valid" ng-model="currentPage" total-items=<?php echo ($this->totalItemCount) ?>  ng-change="pageChanged()" >
+	<?php if (!$this->previous): ?>
+		<li ng-class="{disabled: noPrevious()}" class="ng-scope disabled"><a href=""  class="ng-binding">First</a></li>
+		<li ng-class="{disabled: noPrevious()}" class="ng-scope disabled"><a href="" class="ng-binding">Previous</a></li>
+	<?php else: ?>
+  		<li ng-class="{disabled: noPrevious()}" class="ng-scope page.active"><a href="<?php echo '/search?term=' .$this->term.$parameterGet . '&location=' .$this->location.$parameterGet . '&page=1' . '&type=p' ?>"  class="ng-binding">First</a></li>
+  		<li ng-class="{disabled: noPrevious()}" class="ng-scope page.active"><a href="<?php echo '/search?term=' .$this->term.$parameterGet . '&location=' .$this->location.$parameterGet . '&page=' . $this->previous.$parameterGet . '&type=p' ?>"  class="ng-binding">Previous</a></li>
+	<?php endif; ?>
+ 	<?php foreach ($this->pagesInRange as $page): ?>
+	<?php if ($page != $this->current): ?>
+		<li  ng-class="{active: page.active}" class="ng-scope"><a href="<?php echo '/search?term=' .$this->term.$parameterGet . '&location=' .$this->location.$parameterGet . '&page=' . $page . '&type=p' ?>" class="ng-binding"><?= $page; ?></a></li>
+	<?php else: ?>
+		<li  ng-class="{active: page.active}" class="ng-scope active"><a href="" class="ng-binding"><?= $page; ?></a></li>
+    <?php endif; ?>
+	<?php endforeach; ?>
+    <?php if (isset($this->next)): ?>
+      <li class="ng-scope"><a href="<?php echo '/search?term=' .$this->term.$parameterGet . '&location=' .$this->location.$parameterGet . '&page=' . $this->next.$parameterGet . '&type=p' ?>"  class="ng-binding">Next</a></li>
+      <li class="ng-scope"><a href="<?php echo '/search?term=' .$this->term.$parameterGet . '&location=' .$this->location.$parameterGet . '&page=' . $this->pageCount.$parameterGet . '&type=p' ?>"  class="ng-binding">Last</a></li>
+    <?php else: ?>  
+		<li ng-class="{disabled: noPrevious()}" class="ng-scope disabled"><a href=""  class="ng-binding">Next</a></li>
+  		<li ng-class="{disabled: noPrevious()}" class="ng-scope disabled"><a href="" class="ng-binding">Last</a></li>       
+    <?php endif; ?>
+</ul>
+<?php endif; ?>

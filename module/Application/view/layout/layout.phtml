@@ -1,0 +1,65 @@
+<?php echo $this->doctype(); ?>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<?php echo $this->headMeta()
+            ->appendName('viewport', 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no')
+            ->appendHttpEquiv('X-UA-Compatible', 'IE=edge')
+        ?>
+<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+<?php echo $this->headTitle($this->translate('Resumes 2 Work'))->setSeparator(' | ')->setAutoEscape(false) ?>
+<!-- Style sheet -->
+<?php echo $this->headLink(array('rel' => 'shortcut icon', 'type' => 'image/vnd.microsoft.icon', 'href' => $this->basePath() . '/img/favicon.ico'))
+                ->prependStylesheet($this->basePath('css/style.css'))
+                ->prependStylesheet($this->basePath('css/developer.css'))
+				->prependStylesheet($this->basePath('css/bootstrap.min.css')) ?>
+
+<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+<!-- Scripts -->
+        <?php echo $this->headScript()
+			->appendFile($this->basePath('analytic/mp.js'))
+			->appendFile($this->basePath('analytic/ga.js'))
+        	->appendFile($this->basePath('js/jquery-1.12.0.min.js'))
+        	->appendFile($this->basePath('js/bootstrap.min.js'))
+        	->appendFile($this->basePath('js/slidx.js'))
+            ->appendFile($this->basePath('js/custom.js'))
+            ->prependFile($this->basePath('js/respond.min.js'), 'text/javascript', array('conditional' => 'lt IE 9',))
+            ->prependFile($this->basePath('js/html5shiv.min.js'),   'text/javascript', array('conditional' => 'lt IE 9',))
+        ; ?>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+</head>
+<?php 
+$routeMatch = $this->getHelperPluginManager()->getServiceLocator()->get('application')->getMvcEvent()->getRouteMatch();
+if($routeMatch){
+	$this->isHome = $routeMatch->getMatchedRouteName()=='application'?true:false;
+	$controller = $routeMatch->getParam('controller', 'index');
+	$explodController = explode('\\', $controller);
+	//$controller = array_pop(explode('\\', $controller));
+	$controller = array_pop($explodController);
+	$action = $routeMatch->getParam('action', 'index');
+}
+
+if($this->getHelperPluginManager()->getServiceLocator()->get('AuthService')->hasIdentity()){
+	$this->isLoggedIn = $this->getHelperPluginManager()->getServiceLocator()->get('AuthService')->hasIdentity();
+	$this->user = $this->getHelperPluginManager()->getServiceLocator()->get('AuthService')->getIdentity();
+}
+
+?>
+
+<body <?php if($this->isHome){?>class="withBG"<?php }?>>
+<div class="wrap">	
+  <div>
+  <?php echo $this->render('header.phtml');?>   
+	<?php echo $this->content; ?>
+  </div>
+    
+<?php echo $this->render('footer.phtml');?>
+<?php if($this->isHome){?>
+<div class="dimond"></div>
+<?php }?>
+</div>
+<?php echo $this->inlineScript() ?>
+</body>
+</html>

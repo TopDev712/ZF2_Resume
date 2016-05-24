@@ -1,0 +1,77 @@
+<div class="login clearfix" ng-app="AuthApp" ng-controller="LoginController">
+    <div class="col-sm-offset-3 col-sm-6 bordered">
+        <h2>Sign in</h2>
+
+        <div class="m40">
+            <form id="login" name="userForm" ng-submit="submitForm()" novalidate>
+                <div id="message-box" ng-if="loginError!=null" class="alert alert-danger has-error">
+				  <div class="message-content"> {{ loginError }}</div>
+				</div>
+                
+                <div class="form-group"
+                     ng-class="{ 'has-error' : userForm.email.$invalid && !userForm.email.$pristine }">
+                    <input type="email" class="input-sm form-control" placeholder="Your email address"
+                           ng-model="userForm.email" required/>
+
+                    <p ng-show="userForm.email.$invalid && !userForm.email.$pristine" class="help-block">Enter a valid
+                        email.</p>
+                </div>
+                <div class="form-group" ng-class="{ 'has-error' : userForm.name.$invalid && !userForm.name.$pristine }">
+                    <input type="password" class="input-sm form-control" placeholder="Your password"
+                           ng-model="userForm.password" required/>
+                    <p ng-show="userForm.password.$invalid && !userForm.password.$pristine" class="help-block">Password
+                        is required.</p>
+                </div>
+
+                <div class="form-group">
+                    <input type="submit" value="Sign In" class="btn btn-primary btn-block"
+                           ng-disabled="userForm.$invalid"/>
+                </div>
+                <a href="<?php echo $this->basePath()?>/forgot-password">Forgot Passord?</a>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <h2 class="text-center">Join the millions of job seekers finding jobs on Resumes 2 Work! </h2>
+        <ul class="features clearfix">
+            <li>Get daily job alerts via email</li>
+            <li>Mobile optimized job search tools</li>
+            <li>InstaMatch to jobs hiring now</li>
+            <li>No spam or banners, just jobs</li>
+            <li>One-click apply to jobs</li>
+            <li>Best of all, it's FREE!</li>
+        </ul>
+        <div class="m20 text-center">
+            <img src="<?php echo $this->basePath(); ?>/images/rapidssl90x90.jpg" alt="sslcert"/>
+        </div>
+    </div>
+</div>
+<script>
+    var app = angular.module('AuthApp', []);
+    app.controller('LoginController', function ($scope, $http) {
+    	$('.login-link').hide();
+        $scope.submitForm = function () {
+            if ($scope.userForm.$valid) {
+                var form ={
+                  "email": $scope.userForm.email,
+                  "password": $scope.userForm.password,
+                  "provider": "EMAIL"
+                };
+                $http.post('/api/auth', form).success(function (response) {
+                    if (response.status == "Successful") {
+                        window.location = "<?php echo $this->basePath(); ?>/dashboard";
+                    } else {
+                        $scope.loginError = response.message;
+                    }
+                });
+            }
+
+        };
+
+    });
+
+
+
+</script>
